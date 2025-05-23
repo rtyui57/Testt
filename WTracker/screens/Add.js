@@ -32,6 +32,8 @@ export default function WeightInput() {
         }
     };
 
+    console.log("adsjkajdk")
+
     return (
         <View style={styles.container}>
             <Text style={styles.label}>Selecciona tu peso</Text>

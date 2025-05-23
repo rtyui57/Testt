@@ -12,7 +12,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={{ padding: 20 }}>
+    <View style={{ padding: 60 }}>
       <TextInput placeholder="Usuario" value={username} onChangeText={setUsername} />
       <Button title="Entrar" onPress={handleLogin} />
     </View>
