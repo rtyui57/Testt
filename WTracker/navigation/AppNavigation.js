@@ -29,7 +29,7 @@ function BottomTabs() {
             iconName = focused ? 'analytics' : 'analytics-outline';
           }
 
-          return <Ionicons name="barbell-outline" size={size} color={color} />;
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#3b82f6',
         tabBarInactiveTintColor: 'gray',

@@ -23,8 +23,8 @@ export default function WeightInput() {
     const sendWeight = async () => {
         try {
             const peso = weight + (0.1 * decimal);
-            console.log('Peso añadido:', peso);
-            const result = await addWeight("test", peso, new Date().toISOString().slice(0, 10));
+            console.log(`Peso ${peso} añadido el ${new Date().toISOString()}`);
+            const result = await addWeight("test", peso, new Date().toISOString());
             console.log('Peso añadido');
 
         } catch (error) {

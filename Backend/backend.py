@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, EmailStr
 from typing import List
-from datetime import date
+from datetime import datetime, date
 import bcrypt
 from pymongo import MongoClient
 
@@ -17,7 +17,7 @@ class RegisterUser(BaseModel):
     password: str
 
 class WeightEntry(BaseModel):
-    date: date
+    date: datetime
     value: float
 
 # ---- Endpoints ----
