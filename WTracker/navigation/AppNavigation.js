@@ -36,7 +36,7 @@ function BottomTabs() {
       })}
     >
       <Tab.Screen name="Peso" component={WeightInput} />
-      <Tab.Screen name="Visualizer" component={WeightInput} />
+      <Tab.Screen name="Visualizer" component={WeightChart} />
       <Tab.Screen name="Perfil" component={WeightChart} />
     </Tab.Navigator>
   );

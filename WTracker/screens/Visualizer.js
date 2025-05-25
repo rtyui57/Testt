@@ -1,84 +1,97 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, Button } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import axios from 'axios';
-import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, {
-  useAnimatedGestureHandler,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  runOnJS,
-} from 'react-native-reanimated';
+import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, withSpring, runOnJS } from 'react-native-reanimated';
+import { useFocusEffect } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
 
 const WeightGraphScreen = () => {
+
+  const visibleCount = 7;
+
   const [data, setData] = useState([]);
   const [startIndex, setStartIndex] = useState(0);
-  const visibleCount = 7;
-  const endIndex = startIndex + visibleCount;
-  const visibleData = data.length > 0 ? data.slice(startIndex, endIndex) : [];
-  const [selectedIndex, setSelectedIndex] = useState(Math.floor(visibleData.length / 2));
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const allValues = data.map(d => Math.round(d.value));
+  const maxStart = Math.max(0, data.length - visibleCount);
+  const safeStartIndex = Math.min(Math.max(startIndex, 0), maxStart);
+  const endIndex = Math.min(safeStartIndex + visibleCount, data.length);
+  const visibleData = data.slice(safeStartIndex, endIndex);
 
   useEffect(() => {
+    if (data.length > 0) {
+      const maxStart = Math.max(0, data.length - visibleCount);
+      setStartIndex(maxStart);
+      setSelectedIndex(visibleCount - 1); // Selecciona el último visible
+    }
+  }, [data]);
+
+  const fetchWeights = () => {
+    console.log("Fetching weights...");
     axios.get('http://192.168.0.27:8000/weights/test')
       .then(response => setData(response.data))
       .catch(error => console.error('Error fetching data:', error));
-  }, []);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchWeights();
+    }, [])
+  );
 
   const translateX = useSharedValue(0);
 
-  const onGestureEvent = useAnimatedGestureHandler({
-    onStart: (_, ctx) => {
-      ctx.startX = translateX.value;
-    },
-    onActive: (event, ctx) => {
-      translateX.value = ctx.startX + event.translationX;
-    },
-    onEnd: (event) => {
-      console.log("Se ha movido el gesto en el eje X:", event.translationX);
-      if (event.translationX < -150) {
-        console.log("Movimiento hacia la izquierda");
-        setSelectedIndex(selectedIndex + 1);
-      }
-      translateX.value = withSpring(0);
+  const safeSelectedIndex = Math.min(Math.max(selectedIndex, 0), visibleData.length - 1);
+  const selectedData = visibleData[safeSelectedIndex] || { value: '-', date: '-' };
+
+  // Handlers para moverse
+  const handleRight = () => {
+    if (safeStartIndex < maxStart) {
+      setStartIndex(safeStartIndex + 1);
+      setSelectedIndex(prev => Math.min(prev + 1, visibleCount - 1, data.length - 1));
     }
-  });
+  };
 
   const handleLeft = () => {
-    setStartIndex(startIndex - 1);
-    setSelectedIndex(Math.max(0, selectedIndex - 1));
-  };
-
-  const handleRight = () => {
-    if (endIndex < data.length) {
-      setStartIndex(startIndex + 1);
-      setSelectedIndex(Math.min(visibleCount - 1, selectedIndex + 1));
+    if (safeStartIndex > 0) {
+      setStartIndex(safeStartIndex - 1);
+      setSelectedIndex(prev => Math.max(prev - 1, 0));
     }
   };
+  const panGesture = Gesture.Pan()
+    .onUpdate(e => {
+      translateX.value = e.translationX;
+    })
+    .onEnd(e => {
+      if (e.translationX > 60) {
+        runOnJS(handleLeft)();
+      } else if (e.translationX < -60) {
+        runOnJS(handleRight)();
+      }
+      translateX.value = withSpring(0);
+    });
 
   if (visibleData.length === 0) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Cargando datos...</Text>
-        <Text style={styles.value}>0 kg</Text>
-        <Text style={styles.date}>No hay data disponible</Text>
       </View>
     );
   }
 
-  const selectedData = visibleData[selectedIndex];
-
   return (
     <View style={styles.container}>
-      <View flex={1} style={{ alignItems: 'center', flex: 1, backgroundColor: 'rgba(45, 146, 70, 0.8)', borderRadius: 16, padding: 20, marginBottom: 20 }}>
+      <View flex={1} style={{ alignItems: 'center', flex: 1, borderRadius: 16, padding: 20, marginBottom: 20 }}>
         <Text style={styles.title}>Tu peso</Text>
         <Text style={styles.value}>{selectedData.value} kg</Text>
         <Text style={styles.date}>{selectedData.date.slice(0, 16).replace("T", " ")}</Text>
       </View>
 
-      <View style={{ position: 'relative', flex: 1, width: screenWidth - 40 }}>
+      <View style={{ position: 'relative', flex: 5, width: screenWidth - 40 }}>
         <LineChart
           data={{
             labels: visibleData.map(d => d.date.slice(5, 10).replace("-", "/")),
@@ -91,6 +104,10 @@ const WeightGraphScreen = () => {
           }}
           width={screenWidth - 40}
           height={220}
+          yMin={allValues.length ? Math.min(...allValues) : 0} // <-- Fija el mínimo
+          yMax={allValues.length ? Math.max(...allValues) : 100} // <-- Fija el máximo
+          yAxisMin ={allValues.length ? Math.min(...allValues) : 0} // <-- Fija el mínimo
+          yAxisMax ={allValues.length ? Math.max(...allValues) : 100} // <-- Fija el máximo
           fromZero
           chartConfig={{
             flexDirection: 'row',
@@ -109,21 +126,9 @@ const WeightGraphScreen = () => {
           onDataPointClick={({ index }) => setSelectedIndex(index)}
         />
         <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-          <PanGestureHandler onGestureEvent={onGestureEvent}>
-            <Animated.View
-              style={
-                {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: screenWidth - 40,
-                  height: 220,
-                  backgroundColor: 'rgba(179, 19, 19, 0.79)', // invisible pero recibe eventos
-                  zIndex: 10,
-                }
-              }
-            />
-          </PanGestureHandler>
+          <GestureDetector gesture={panGesture}>
+            <Animated.View style={styles.animated} />
+          </GestureDetector>
         </GestureHandlerRootView>
       </View>
     </View>
@@ -155,6 +160,15 @@ const styles = StyleSheet.create({
   },
   chart: {
     borderRadius: 16
+  },
+  animated: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: screenWidth - 40,
+    height: 220,
+    backgroundColor: 'rgba(179, 19, 19, 0.01)',
+    zIndex: 10,
   }
 });
 
