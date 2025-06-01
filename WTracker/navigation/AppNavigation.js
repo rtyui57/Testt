@@ -1,4 +1,3 @@
-// AppNavigator.tsx
 import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -7,12 +6,12 @@ import { AuthContext } from '../context/AuthContext';
 import WeightInput from '../screens/Add';
 import WeightChart from '../screens/Visualizer';
 import LoginScreen from '../screens/Login';
-import { Ionicons } from '@expo/vector-icons'; // O react-native-vector-icons
+import { Ionicons } from '@expo/vector-icons';
+import RegisterScreen from '../screens/Register';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Tabs para usuarios logueados
 function BottomTabs() {
   return (
     <Tab.Navigator
@@ -53,7 +52,7 @@ export default function AppNavigator() {
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
           </>
         )}
       </Stack.Navigator>

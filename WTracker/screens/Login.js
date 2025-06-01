@@ -1,16 +1,27 @@
 import React, { useState, useContext } from 'react';
-import { View, TextInput, Button, StyleSheet } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
+import * as LocalAuthentication from 'expo-local-authentication';
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState(''); // Nuevo estado para password
+  const [password, setPassword] = useState('');
   const { login } = useContext(AuthContext);
 
   const handleLogin = () => {
-    // aquí podrías verificar con la API
-    login(username, password); // Pasa también la contraseña si lo necesitas
+    login(username);
   };
+
+  const handleBiometricLogin = async () => {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Autenticación biométrica',
+    });
+    if (result.success) {
+      login('usuario_biometrico');
+    }
+  };
+
+
 
   return (
     <View style={{ padding: 60, backgroundColor: '#fff' }}>
@@ -18,18 +29,20 @@ export default function LoginScreen() {
         placeholder="Usuario"
         value={username}
         onChangeText={setUsername}
-        style={styles.input} // Añade estilos para el input
-         // Oculta el texto
+        style={styles.input}
       />
       <TextInput
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry={true}
-        style={styles.input} // Añade estilos para el input
-         // Oculta el texto
+        style={styles.input}
       />
       <Button title="Entrar" onPress={handleLogin} />
+      <Text style={styles.link} onPress={() => navigation.navigate('Register')}>
+        ¿No tienes cuenta? Regístrate
+      </Text>
+      <Button title="Entrar con biometría" onPress={handleBiometricLogin} />
     </View>
   );
 }
@@ -41,6 +54,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  link: {
+    color: '#007AFF',
+    marginTop: 20,
+    textDecorationLine: 'underline',
   },
   input: {
     height: 40,
