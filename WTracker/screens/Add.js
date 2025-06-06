@@ -43,14 +43,15 @@ export default function WeightInput() {
                     onValueChange={(value) => setWeight(value)}
                     items={weights}
                     value={weight}
-                    style={pickerSelectStyles}
+                    style={{ flex: 1, height: 50 }}
                     useNativeAndroidPickerStyle={false}
                 />
                 <Picker
                     selectedValue={decimal}
                     onValueChange={(itemValue, itemIndex) =>
                         setDecimal(itemValue)
-                    }>
+                    }
+                    style={{ flex: 1, height: 50 }}>
                     {Array.from({ length: 9 }, (_, i) => i + 1).map((num) => (
                         <Picker.Item key={num} label={String(num)} value={num} />
                     ))}
@@ -59,7 +60,8 @@ export default function WeightInput() {
                     selectedValue={selectedLanguage}
                     onValueChange={(itemValue, itemIndex) =>
                         setSelectedLanguage(itemValue)
-                    }>
+                    }
+                      style={{ flex: 1, height: 50 }}>
 
                     <Picker.Item key={"KG"} label={"KG"} value={"KG"} />
                     <Picker.Item key={"LB"} label={"LB"} value={"LB"} />
@@ -97,6 +99,7 @@ const styles = StyleSheet.create({
         color: '#1e293b',
     },
     pickerContainer: {
+        flexDirection: 'row',
         backgroundColor: '#fff',
         borderRadius: 12,
         padding: 10,
@@ -128,6 +131,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 8,
     },
+    input: {
+        height: 50,
+        borderColor: '#d1d5db',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        fontSize: 18,
+        color: '#0f172a',
+        width: '100%',
+    },
 });
 
 const pickerSelectStyles = StyleSheet.create({
@@ -136,11 +149,13 @@ const pickerSelectStyles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 10,
         color: '#0f172a',
+        flex: 1,
     },
     inputAndroid: {
         fontSize: 18,
         paddingVertical: 8,
         paddingHorizontal: 10,
         color: '#0f172a',
+         flex: 1,
     },
 });

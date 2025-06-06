@@ -16,6 +16,18 @@ export const registerUser = async (username, email, password) => {
   }
 };
 
+export const loginUser = async (username, password) => {
+  try {
+    const res = await axios.post(`${BASE_URL}/login`, {
+      username,
+      password,
+    });
+  } catch (error) {
+    console.error('Error al registrar usuario:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const addWeight = async (username, value, date) => {
   try {
     const res = await axios.post(`${BASE_URL}/add_weight/${username}`, {

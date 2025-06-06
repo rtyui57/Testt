@@ -7,6 +7,7 @@ import WeightInput from '../screens/Add';
 import WeightChart from '../screens/Visualizer';
 import LoginScreen from '../screens/Login';
 import { Ionicons } from '@expo/vector-icons';
+import ProfileScreen from '../screens/Profile';
 import RegisterScreen from '../screens/Register';
 
 const Stack = createNativeStackNavigator();
@@ -36,7 +37,7 @@ function BottomTabs() {
     >
       <Tab.Screen name="Peso" component={WeightInput} />
       <Tab.Screen name="Visualizer" component={WeightChart} />
-      <Tab.Screen name="Perfil" component={WeightChart} />
+      <Tab.Screen name="Perfil" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }

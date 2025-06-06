@@ -112,13 +112,13 @@ const WeightGraphScreen = () => {
           chartConfig={{
             flexDirection: 'row',
             backgroundGradientFrom: "#ffffff",
-            backgroundGradientTo: "#ffffff",
+            backgroundGradientTo: "#ff2d00",
             color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
             labelColor: () => "#888",
             propsForDots: {
               r: "4",
               strokeWidth: "2",
-              stroke: "#007AFF"
+              stroke: "#ff2d00"
             }
           }}
           bezier

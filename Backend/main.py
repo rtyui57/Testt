@@ -1,16 +1,17 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel, EmailStr
 from typing import List
 from datetime import datetime, date
 import bcrypt
 from pymongo import MongoClient
+import os
 
+mongo_url = os.environ.get("MONGO_URL", "mongodb://admin:admin123@localhost:27017")
 app = FastAPI()
-client = MongoClient("mongodb://admin:admin123@192.168.0.16:27017")
+client = MongoClient(mongo_url)
 db = client["lightweight_app"]
 users = db["users"]
 
-# ---- Modelos ----
 class RegisterUser(BaseModel):
     username: str
     email: EmailStr
@@ -20,7 +21,15 @@ class WeightEntry(BaseModel):
     date: datetime
     value: float
 
-# ---- Endpoints ----
+@app.post("/login")
+def login(username: str = Body(...), password: str = Body(...)):
+    user = users.find_one({"username": username})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    if not bcrypt.checkpw(password.encode(), user["hashed_password"]):
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+    return {"message": "Login correcto"}
+
 @app.post("/register")
 def register_user(user: RegisterUser):
     if users.find_one({"username": user.username}):
